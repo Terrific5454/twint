@@ -181,7 +181,7 @@ async def RandomUserAgent(wa=None):
         return random.choice(user_agent_list)
 
 
-async def Username(_id, bearer_token, guest_token):
+async def Username(_id, bearer_token, guest_token, config):
     logme.debug(__name__ + ':Username')
     _dct = {'userId': _id, 'withHighlightedLabel': False}
     _url = "https://api.twitter.com/graphql/B9FuNQVmyx32rdbIPEZKag/UserByRestId?variables={}".format(dict_to_url(_dct))
@@ -189,15 +189,21 @@ async def Username(_id, bearer_token, guest_token):
         'authorization': bearer_token,
         'x-guest-token': guest_token,
     }
-    r = await Request(_url, headers=_headers)
+    _connector = get_connector(config)
+    r = await Request(_url, connector=_connector, headers=_headers)
     j_r = loads(r)
-    username = j_r['data']['user']['legacy']['screen_name']
-    return username
+    if 'errors' in j_r:
+        if j_r['errors'][0]['code'] == 50:  # account doesn't exist
+            return None
+    else:
+        username = j_r['data']['user']['legacy']['screen_name']
+        return username
 
 
 async def Tweet(url, config, conn):
     logme.debug(__name__ + ':Tweet')
     try:
+        _connector = get_connector(config)
         response = await Request(url)
         soup = BeautifulSoup(response, "html.parser")
         tweets = soup.find_all("div", "tweet")
@@ -216,7 +222,8 @@ async def User(username, config, conn, user_id=False):
         'x-guest-token': config.Guest_token,
     }
     try:
-        response = await Request(_url, headers=_headers)
+        _connector = get_connector(config)
+        response = await Request(_url, connector=_connector, headers=_headers)
         j_r = loads(response)
         if user_id:
             try:

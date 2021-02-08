@@ -19,6 +19,11 @@ class Token:
     def __init__(self, config):
         self._session = requests.Session()
         self._session.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101 Firefox/78.0'})
+        if config.Proxy_host and config.Proxy_port and config.Proxy_type:
+            self._session.proxies = {
+                "http": config.Proxy_type + "://" + config.Proxy_host + ":" + str(config.Proxy_port),
+                "https": config.Proxy_type + "://" + config.Proxy_host + ":" + str(config.Proxy_port),
+            }
         self.config = config
         self._retries = 5
         self._timeout = 10
