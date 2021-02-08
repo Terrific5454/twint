@@ -245,7 +245,7 @@ class Twint:
             self.config.Username = await get.Username(self.config.User_id, self.config.Bearer_token,
                                                       self.config.Guest_token, self.config)
             if self.config.Username is None:
-                print('找不到用户或已注销！')
+                print('Cannot find the user!')
                 return None
         if self.config.Username is not None and self.config.User_id is None:
             logme.debug(__name__ + ':Twint:main:username')
